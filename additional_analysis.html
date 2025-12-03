@@ -9,13 +9,12 @@
 <meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
 
 
-<meta name="author" content="Shivalika Chavan" />
 
 <meta name="date" content="2025-12-02" />
 
 <title>Additional Analysis</title>
 
-<script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
+<script src="site_libs/header-attrs-2.30/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <link href="site_libs/bootstrap-3.3.5/css/journal.min.css" rel="stylesheet" />
@@ -31,6 +30,9 @@
        h6 {font-size: 12px;}
        code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
        pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
 <script src="site_libs/navigation-1.1/tabsets.js"></script>
 <link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
 <script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
@@ -223,6 +225,69 @@ $(document).ready(function () {
 
 
 
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
 
 </head>
 
@@ -230,6 +295,16 @@ $(document).ready(function () {
 
 
 <div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
 
 
 
@@ -277,42 +352,684 @@ $(document).ready(function () {
 
 
 <h1 class="title toc-ignore">Additional Analysis</h1>
-<h4 class="author">Shivalika Chavan</h4>
 <h4 class="date">2025-12-02</h4>
 
 </div>
 
 
-<div id="r-markdown" class="section level2">
-<h2>R Markdown</h2>
-<p>This is an R Markdown document. Markdown is a simple formatting
-syntax for authoring HTML, PDF, and MS Word documents. For more details
-on using R Markdown see <a href="http://rmarkdown.rstudio.com"
-class="uri">http://rmarkdown.rstudio.com</a>.</p>
-<p>When you click the <strong>Knit</strong> button a document will be
-generated that includes both content as well as the output of any
-embedded R code chunks within the document. You can embed an R code
-chunk like this:</p>
-<pre class="r"><code>summary(cars)</code></pre>
-<pre><code>##      speed           dist       
-##  Min.   : 4.0   Min.   :  2.00  
-##  1st Qu.:12.0   1st Qu.: 26.00  
-##  Median :15.0   Median : 36.00  
-##  Mean   :15.4   Mean   : 42.98  
-##  3rd Qu.:19.0   3rd Qu.: 56.00  
-##  Max.   :25.0   Max.   :120.00</code></pre>
+<pre class="r"><code>knitr::opts_chunk$set(echo = TRUE, collapse = TRUE)
+
+library(tidyverse)
+library(haven)
+library(lubridate)
+library(here)
+library(patchwork)
+library(epitools)
+library(ggcorrplot)
+library(patchwork)
+library(plotly)
+
+source(here(&quot;source&quot;, &quot;load_clean_brfss.R&quot;))
+source(here(&quot;source&quot;, &quot;filter_brfss_data.R&quot;))
+source(here(&quot;source&quot;, &quot;standardize_brfss_variable.R&quot;))
+source(here(&quot;source&quot;, &quot;prop_test_functions.R&quot;))
+source(here(&quot;source&quot;, &quot;run_fishers_test.R&quot;))
+
+brfss_data = load_clean_brfss(here(&quot;data&quot;, &quot;brfss_clean_2017_2024.csv.zip&quot;))
+state_fips = read_csv(here(&quot;data&quot;, &quot;legal_sports_report&quot;, &quot;state_fips.csv&quot;))
+
+state_legal_dates = read_csv(here(&quot;data&quot;, &quot;legal_sports_report&quot;, &#39;state_legalization_dates.csv&#39;))
+sb_rev_by_month = read_csv(here(&quot;data&quot;, &quot;legal_sports_report&quot;, &quot;sb_rev_by_month.csv&quot;))
+sb_rev_by_state_month = read_csv(here(&quot;data&quot;, &quot;legal_sports_report&quot;,&#39;sb_rev_by_state_month.csv&#39;))
+sb_rev_by_state = read_csv(here(&quot;data&quot;, &quot;legal_sports_report&quot;, &quot;sb_rev_by_state.csv&quot;))
+state_pop = read_csv(here(&quot;data&quot;, &quot;state_population_census.csv&quot;))
+
+years_in_data = unique(year(pull(sb_rev_by_month, month)))
+
+outcome_vars = c(&quot;any_physical_health_not_good_days&quot;, &quot;any_mental_health_not_good_days&quot;, &quot;has_depressive_disorder&quot;, &quot;has_binge_drink&quot;)
+
+theme_set(theme_minimal() + theme(legend.position = &quot;bottom&quot;))</code></pre>
+<div id="additional-analysis" class="section level1">
+<h1>Additional analysis</h1>
+<p>To test the relationship between sports betting legalization and
+health outcomes, we employed two statistical approaches: a proportion
+test to compare the prevalence of adverse outcomes before and after the
+legalization of sports betting, and a Fisher’s Exact Test to calculate
+the Relative Risk (RR) of these outcomes in states where sports betting
+is legal vs. states where it is illegal for the most recent data in
+2024. We compared outcome rates in “exposed” (sports betting is legal)
+and “unexposed” (sports betting is not legal) populations.</p>
+<div id="prop-tests" class="section level2">
+<h2>Prop Tests</h2>
+<p>Our one-sided two sample proportion tests are examining whether there
+is a significant change (baseline is lower) in the rates of the 4 health
+outcomes. In the first test, for example, the null hypothesis is that
+the rate of a particular outcome (e.g. binge drinking) is the same in
+2017 and in 2024. The alternative is that the rate of binge drinking was
+less in 2017 that it was in 2024.</p>
+<p>These tests looks at the raw change over time, regardless of when
+legalization occurred, providing a general benchmark. The lines show the
+change, and the color indicates statistical significance.</p>
+<pre class="r"><code>prop_tests_state = 
+  brfss_data |&gt; 
+  filter(year(date) %in% c(2017, 2024)) |&gt;
+  select(state, date, all_of(outcome_vars)) |&gt;
+  pivot_longer(
+    cols = all_of(outcome_vars),
+    names_to = &quot;outcome&quot;,
+    values_to = &quot;outcome_value&quot; 
+    ) |&gt;
+  group_by(state, outcome) |&gt;
+  nest() |&gt; 
+  mutate(test_result = map(data, run_prop_test_state)) |&gt; 
+  factor_significant()
+
+combine_plots(prop_tests_state)</code></pre>
+<p><img src="additional_analysis_files/figure-html/unnamed-chunk-1-1.png" width="95%" /></p>
+<p>The second test we wanted to run used each state’s specific
+legalization date, <code>sb_legal</code>, as the inflection point. We
+also repeated this test looking specifically at adults under 50 due to
+their higher participation in sports betting.</p>
+<p>According to <a
+href="https://www.pewresearch.org/short-reads/2025/10/02/americans-increasingly-see-legal-sports-betting-as-a-bad-thing-for-society-and-sports/">PEW</a>
+research, “Young adults are more likely than older Americans to say
+they’ve placed a sports bet in the past year.”</p>
+<pre class="r"><code>prop_tests_sb_legal = 
+  brfss_data |&gt; 
+  select(state, sb_legal, all_of(outcome_vars)) |&gt;
+  pivot_longer(
+    cols = all_of(outcome_vars),
+    names_to = &quot;outcome&quot;,
+    values_to = &quot;outcome_value&quot; 
+    ) |&gt;
+  group_by(state, outcome) |&gt;
+  nest() |&gt; 
+  mutate(test_result = map(data, run_prop_test_state_legalization)) |&gt; 
+  factor_significant()
+
+combine_plots(prop_tests_sb_legal)</code></pre>
+<p><img src="additional_analysis_files/figure-html/unnamed-chunk-2-1.png" width="95%" /></p>
+<pre class="r"><code>prop_tests_sb_legal = 
+  brfss_data |&gt; 
+  filter(age_group_5yr %in% c(&quot;18-24&quot;, &quot;25-29&quot;, &quot;30-34&quot;, &quot;35-39&quot;, &quot;40-44&quot;, &quot;45-49&quot;)) |&gt; 
+  select(state, sb_legal, all_of(outcome_vars)) |&gt;
+  pivot_longer(
+    cols = all_of(outcome_vars),
+    names_to = &quot;outcome&quot;,
+    values_to = &quot;outcome_value&quot; 
+    ) |&gt;
+  group_by(state, outcome) |&gt;
+  nest() |&gt; 
+  mutate(test_result = map(data, run_prop_test_state_legalization)) |&gt; 
+  factor_significant()
+
+combine_plots(prop_tests_sb_legal)</code></pre>
+<p><img src="additional_analysis_files/figure-html/unnamed-chunk-3-1.png" width="95%" /></p>
+<p>##Fischer’s exact test #### Relative Risk of Poor Mental Health
+Outcomes in Legal vs. Non-Legal states in 2024</p>
+<p>In 2024, what is the risk of having poor mental health outcomes based
+on state legalization?</p>
+<p>Exposure: betting legalization</p>
+<p>Outcomes: any_physical_health_not_good_days,
+any_mental_health_not_good_days, has_depressive_disorder,
+has_binge_drink</p>
+<p>We opted to use a Fisher’s exact test in the event that one of the
+counts happened to be small. The goal of this test is to determine if
+there is a statistically significant association between status of
+sports betting legalization and the presence of the 4 health
+outcomes.</p>
+<pre class="r"><code>phys_health_results = 
+  brfss_data |&gt;
+  filter(year(date) == 2024, age_group_5yr %in% c(&quot;18-24&quot;, &quot;25-29&quot;), !is.na(any_physical_health_not_good_days)) |&gt;
+  select(sb_legal, any_physical_health_not_good_days) |&gt; 
+  rename(outcome = any_physical_health_not_good_days) |&gt; 
+  run_fishers_test()
+
+phys_health_results |&gt; pull(summary) |&gt; knitr::kable()</code></pre>
+<table class="kable_wrapper">
+<tbody>
+<tr>
+<td>
+<table>
+<thead>
+<tr class="header">
+<th align="left">sports_betting_legal</th>
+<th align="right">outcome_FALSE</th>
+<th align="right">outcome_TRUE</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">FALSE</td>
+<td align="right">6578</td>
+<td align="right">4186</td>
+</tr>
+<tr class="even">
+<td align="left">TRUE</td>
+<td align="right">15277</td>
+<td align="right">10692</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>
+ment_health_results = 
+  brfss_data |&gt;
+  filter(year(date) == 2024, age_group_5yr %in% c(&quot;18-24&quot;, &quot;25-29&quot;), !is.na(any_mental_health_not_good_days)) |&gt;
+  select(sb_legal, any_mental_health_not_good_days) |&gt; 
+  rename(outcome = any_mental_health_not_good_days) |&gt; 
+  run_fishers_test()
+
+ment_health_results |&gt; pull(summary) |&gt; knitr::kable()</code></pre>
+<table class="kable_wrapper">
+<tbody>
+<tr>
+<td>
+<table>
+<thead>
+<tr class="header">
+<th align="left">sports_betting_legal</th>
+<th align="right">outcome_FALSE</th>
+<th align="right">outcome_TRUE</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">FALSE</td>
+<td align="right">4357</td>
+<td align="right">6384</td>
+</tr>
+<tr class="even">
+<td align="left">TRUE</td>
+<td align="right">9739</td>
+<td align="right">16298</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>
+depression_results = 
+  brfss_data |&gt;
+  filter(year(date) == 2024, age_group_5yr %in% c(&quot;18-24&quot;, &quot;25-29&quot;), !is.na(has_depressive_disorder)) |&gt;
+  select(sb_legal, has_depressive_disorder) |&gt; 
+  rename(outcome = has_depressive_disorder) |&gt; 
+  run_fishers_test()
+
+depression_results |&gt; pull(summary) |&gt; knitr::kable()</code></pre>
+<table class="kable_wrapper">
+<tbody>
+<tr>
+<td>
+<table>
+<thead>
+<tr class="header">
+<th align="left">sports_betting_legal</th>
+<th align="right">outcome_FALSE</th>
+<th align="right">outcome_TRUE</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">FALSE</td>
+<td align="right">8050</td>
+<td align="right">2794</td>
+</tr>
+<tr class="even">
+<td align="left">TRUE</td>
+<td align="right">18989</td>
+<td align="right">7211</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
+<pre class="r"><code>
+binge_drink_results = 
+  brfss_data |&gt;
+  filter(year(date) == 2024, age_group_5yr %in% c(&quot;18-24&quot;, &quot;25-29&quot;), !is.na(has_binge_drink)) |&gt;
+  select(sb_legal, has_binge_drink) |&gt; 
+  rename(outcome = has_binge_drink) |&gt; 
+  run_fishers_test()
+
+binge_drink_results |&gt; pull(summary) |&gt; knitr::kable()</code></pre>
+<table class="kable_wrapper">
+<tbody>
+<tr>
+<td>
+<table>
+<thead>
+<tr class="header">
+<th align="left">sports_betting_legal</th>
+<th align="right">outcome_FALSE</th>
+<th align="right">outcome_TRUE</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">FALSE</td>
+<td align="right">8474</td>
+<td align="right">2278</td>
+</tr>
+<tr class="even">
+<td align="left">TRUE</td>
+<td align="right">19721</td>
+<td align="right">6319</td>
+</tr>
+</tbody>
+</table>
+</td>
+</tr>
+</tbody>
+</table>
 </div>
-<div id="including-plots" class="section level2">
-<h2>Including Plots</h2>
-<p>You can also embed plots, for example:</p>
-<p><img src="additional_analysis_files/figure-html/pressure-1.png" width="672" /></p>
-<p>Note that the <code>echo = FALSE</code> parameter was added to the
-code chunk to prevent printing of the R code that generated the
-plot.</p>
+<div id="linear-regression" class="section level2">
+<h2>Linear Regression</h2>
+<div id="any-bad-mental-health-days" class="section level4">
+<h4>Any bad mental health days</h4>
+<pre class="r"><code>brfss_data = load_clean_brfss(here::here(&quot;data&quot;, &quot;brfss_clean_2017_2024.csv.zip&quot;)) |&gt; 
+  mutate(
+    month = lubridate::floor_date(date, unit = &quot;month&quot;)
+ )
+## Rows: 37 Columns: 6
+## ── Column specification ────────────────────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## chr  (2): state, abbr
+## dbl  (1): fips
+## date (3): first_start, online, offline
+## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.
+## Multiple files in zip: reading &#39;brfss_clean_2017_2024.csv&#39;
+## Rows: 2749477 Columns: 39
+## ── Column specification ────────────────────────────────────────────────────────────────────────
+## Delimiter: &quot;,&quot;
+## chr   (2): imonth, iday
+## dbl  (36): qstver, dispcode, state, seqno, iyear, sex, marital, educag, empl...
+## date  (1): date
+## 
+## ℹ Use `spec()` to retrieve the full column specification for this data.
+## ℹ Specify the column types or set `show_col_types = FALSE` to quiet this message.</code></pre>
+<p>Filter age group &lt; 50 (and sports betting legal)</p>
+<pre class="r"><code>brfss_age_data = brfss_data |&gt; 
+  filter(
+    age_group_5yr %in% 
+      c(&quot;18-24&quot;,&quot;25-29&quot;,&quot;30-34&quot;,&quot;35-39&quot;,&quot;40-44&quot;,&quot;45-49&quot;),
+    sb_legal %in% c(0, 1))</code></pre>
+<p>We used a linear regression model to look at the effect of legalized
+sports betting on any bad mental health days, and the interaction
+between sex and age.</p>
+<pre class="r"><code>fit =  lm(any_mental_health_not_good_days ~ sex + age_group_5yr + sb_legal 
+                             + sex * sb_legal 
+                             + age_group_5yr * sb_legal, data = brfss_age_data) 
+fit_result = fit |&gt; 
+  broom::tidy() |&gt; 
+  select(term, estimate, std.error, p.value)
+
+fit_result |&gt; 
+  knitr::kable(digits = 3)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">term</th>
+<th align="right">estimate</th>
+<th align="right">std.error</th>
+<th align="right">p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">(Intercept)</td>
+<td align="right">0.658</td>
+<td align="right">0.002</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="even">
+<td align="left">sexMale</td>
+<td align="right">-0.140</td>
+<td align="right">0.002</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="odd">
+<td align="left">age_group_5yr25-29</td>
+<td align="right">-0.067</td>
+<td align="right">0.003</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="even">
+<td align="left">age_group_5yr30-34</td>
+<td align="right">-0.106</td>
+<td align="right">0.003</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="odd">
+<td align="left">age_group_5yr35-39</td>
+<td align="right">-0.135</td>
+<td align="right">0.003</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="even">
+<td align="left">age_group_5yr40-44</td>
+<td align="right">-0.168</td>
+<td align="right">0.003</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="odd">
+<td align="left">age_group_5yr45-49</td>
+<td align="right">-0.183</td>
+<td align="right">0.003</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="even">
+<td align="left">sb_legal</td>
+<td align="right">0.053</td>
+<td align="right">0.003</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="odd">
+<td align="left">sexMale:sb_legal</td>
+<td align="right">0.002</td>
+<td align="right">0.002</td>
+<td align="right">0.425</td>
+</tr>
+<tr class="even">
+<td align="left">age_group_5yr25-29:sb_legal</td>
+<td align="right">0.031</td>
+<td align="right">0.005</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="odd">
+<td align="left">age_group_5yr30-34:sb_legal</td>
+<td align="right">0.030</td>
+<td align="right">0.004</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="even">
+<td align="left">age_group_5yr35-39:sb_legal</td>
+<td align="right">0.022</td>
+<td align="right">0.004</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="odd">
+<td align="left">age_group_5yr40-44:sb_legal</td>
+<td align="right">0.017</td>
+<td align="right">0.004</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="even">
+<td align="left">age_group_5yr45-49:sb_legal</td>
+<td align="right">0.002</td>
+<td align="right">0.004</td>
+<td align="right">0.651</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="predicted-probability-of-1-mentally-unhealthy-day"
+class="section level4">
+<h4>Predicted Probability of ≥1 Mentally Unhealthy Day</h4>
+<pre class="r"><code># Build prediction grid
+pred_df = expand.grid(
+  sex = c(&quot;Female&quot;, &quot;Male&quot;),
+  age_group_5yr = c(&quot;18-24&quot;,&quot;25-29&quot;,&quot;30-34&quot;,&quot;35-39&quot;,&quot;40-44&quot;,&quot;45-49&quot;),
+  sb_legal = c(0, 1)   # illegal = 0, legal = 1
+)
+
+# Get predicted probabilities and plot
+pred_df |&gt; 
+  mutate(pred_prob = predict(fit, newdata = pred_df)) |&gt; 
+  ggplot(aes(x = age_group_5yr, y = pred_prob,
+                    color = interaction(sex, sb_legal),
+                    group = interaction(sex, sb_legal),
+                    linetype = factor(sb_legal))) +
+  geom_line(size = 1.1) +
+  scale_color_manual(
+    name = &quot;&quot;,
+    values = c(
+      &quot;Female.0&quot; = &quot;#AA336A&quot;,  # orange solid
+      &quot;Female.1&quot; = &quot;#DE3163&quot;,  # blue dashed
+      &quot;Male.0&quot;   = &quot;#4682B4&quot;,  # green solid
+      &quot;Male.1&quot;   = &quot;#0F52BA&quot;   # blue dashed
+    ),
+    labels = c(
+      &quot;Female.0&quot; = &quot;Female - SB illegal&quot;,
+      &quot;Female.1&quot; = &quot;Female - SB legal&quot;,
+      &quot;Male.0&quot;   = &quot;Male - SB illegal&quot;,
+      &quot;Male.1&quot;   = &quot;Male - SB legal&quot;
+    )
+  ) +
+  scale_linetype_manual(
+    name = &quot;&quot;,
+    values = c(&quot;0&quot; = &quot;solid&quot;, &quot;1&quot; = &quot;dashed&quot;),
+    labels = c(&quot;0&quot; = &quot;SB illegal&quot;, &quot;1&quot; = &quot;SB legal&quot;)
+  ) +
+  labs(
+    x = &quot;Age Group&quot;,
+    y = &quot;Predicted Probability&quot;,
+    title = &quot;Predicted Probability of ≥1 Mentally Unhealthy Day&quot;,
+    subtitle = &quot;Interaction: Age × Sex × Sports Betting Legalization&quot;
+  ) +
+  theme_minimal(base_size = 14) +
+  theme(
+    legend.position = &quot;right&quot;,
+    axis.text.x = element_text(angle = 45, hjust = 1)
+  )
+## Warning: Using `size` aesthetic for lines was deprecated in ggplot2 3.4.0.
+## ℹ Please use `linewidth` instead.
+## This warning is displayed once every 8 hours.
+## Call `lifecycle::last_lifecycle_warnings()` to see where this warning was generated.</code></pre>
+<p><img src="additional_analysis_files/figure-html/unnamed-chunk-8-1.png" width="672" /></p>
+</div>
+</div>
+</div>
+<div id="discussion" class="section level1">
+<h1>Discussion</h1>
+<p>Overall, we found a significant relationship between legalization of
+sports betting and poor physical/mental health. It is important to note
+that in our statistical analyses, even if the effect size was small, we
+still had a small p-value. This is likely due to the size of the BRFSS
+dataset (~2.7 million observations).</p>
+<p>Our tests of proportion, which first examined the overall trend in
+the four health outcomes between 2017 and 2024, established two trends
+at the national scale. First, there is a clear increase in the rate of
+survey participants reporting at least one poor physical or mental
+health day in almost all states. This is an important benchmark for
+effects we observed later on. However, rates of depressive disorders
+showed a slight increase and rates in binge drinking remained the same
+across this period.</p>
+<p>To isolate the impact of the change in sport betting legalization, we
+performed additional tests of proportion using each state’s date of
+legalization as the inflection point. These results largely mirrored the
+overall trends observed nationally between 2017 and 2024. This implies
+that the impact of sports betting legalization in a particular state did
+not deviate from the broader trend observed over time. One important
+note is that this period includes the COVID-19 pandemic, which likely
+had effects on health outcomes in the US and overlaps with the dates
+that several states legalized sports betting.</p>
+<p>Knowing that more young adults participate in sports betting, we
+further filtered the data for participants under 50 years old. In this
+subset, the overall rate of mental health and depressive disorders was
+higher than the general population. This makes sense intuitively.
+However, the change in the rate after legalization was similar to the
+overall change.</p>
+<p>When put together, these tests of proportion suggest that health
+outcomes have worsened since 2017 across the US overall. These results
+do not show that sports betting legalization changes these trends beyond
+what is observed temporally at the national level.</p>
+<p>However, this conclusion is modified when we look at the relative
+risk of adverse health outcomes in 2024:</p>
+<p>Among BRFSS participants in 2024 between the ages of 18 and 29, those
+who resided in states with legalized sports betting had:</p>
+<ul>
+<li>1.06x risk of having at least 1 day of poor physical health</li>
+<li>1.05x risk of having at least 1 day of poor mental health</li>
+<li>1.07x risk of having depression</li>
+<li>1.15x risk of binge drinking</li>
+</ul>
+<p>compared to those residing in states where sports betting is not
+legal. Each of these results also show that there is a statistically
+significant relationship between the status of sports betting
+legalization and health outcomes:</p>
+<ul>
+<li>At least 1 day of poor physical health: p = 5.08e-05</li>
+<li>At least 1 day of poor mental health: p = 1.61e-08</li>
+<li>Depression: p = 5.17e-04</li>
+<li>Binge Drinking: p = 1.75e-10</li>
+</ul>
+<p>The regression model showed baseline differences in mental health
+between sexes and age groups as well as the effects of legalized sports
+gambling. Men have a 14.02 percentage point lower probability of
+reporting ≥1 mentally unhealthy day compared to women (p &lt; 0.001).
+All age coefficients are negative, meaning older groups report fewer
+mentally unhealthy days than 18–24-year-olds, This matches known
+demographic patterns typical in BRFSS mental health data.</p>
+<p>The overall effect of sports betting legality (<code>sb_legal</code>)
+was 0.053 p = 8.06e-55. In the reference group (female, age 18–24),
+living in a state where sports betting is legal is associated with a
+5.262 percentage point higher probability of reporting ≥1 mentally
+unhealthy day in the past month.</p>
+<p>There is no meaningful difference in the effect of sports betting
+legalization between men and women. The coefficient is tiny (0.0019712)
+and not statistically significant (p = 0.425.)</p>
+<p>Each age interaction term tells us how much the effect of sports
+betting legality differs from the reference group (18–24).</p>
+<pre class="r"><code>fit_result |&gt; 
+  filter(str_starts(term, &quot;age_group_&quot;) &amp; str_ends(term, &quot;sb_legal&quot;)) |&gt; 
+  select(term, estimate, p.value) |&gt; 
+  mutate(
+    term = str_replace_all(term, c(&quot;age_group_5yr&quot;=&quot;&quot;, &quot;:sb_legal&quot;=&quot;&quot;))
+  ) |&gt; 
+  rename(&quot;Age Group&quot; = term) |&gt; 
+  knitr::kable(digits=3)</code></pre>
+<table>
+<thead>
+<tr class="header">
+<th align="left">Age Group</th>
+<th align="right">estimate</th>
+<th align="right">p.value</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">25-29</td>
+<td align="right">0.031</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="even">
+<td align="left">30-34</td>
+<td align="right">0.030</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="odd">
+<td align="left">35-39</td>
+<td align="right">0.022</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="even">
+<td align="left">40-44</td>
+<td align="right">0.017</td>
+<td align="right">0.000</td>
+</tr>
+<tr class="odd">
+<td align="left">45-49</td>
+<td align="right">0.002</td>
+<td align="right">0.651</td>
+</tr>
+</tbody>
+</table>
+<p>The effect is largest for adults 25-29 (0.0310474) and not
+significant for adults 45-49. The impact of sports betting legalization
+on mentally unhealthy days appears stronger for younger adults (25–44)
+but then plateaus. This result can also be seen in the predicted
+probabilty of having 1 or more bad mental health days.</p>
+<p>The results showed how the predicted probability of reporting at
+least one mentally unhealthy day in the past month varies across age
+groups, sex, and whether sports betting is legal in the respondent’s
+state. When sports betting is not legal, women consistently report
+higher rates of mentally unhealthy days than men across all age groups.
+Both sexes show a steady decline in mentally unhealthy days as age
+increases, with 18–24-year-olds exhibiting the highest risk and
+45–50-year-olds the lowest.</p>
+<p>The effect of sports betting legalization is shown by the separation
+between the dashed lines (SB legal) and the solid lines. Across all age
+groups, the dashed lines lie above the corresponding solid lines, which
+means sports betting legalization is associated with a higher
+probability of reporting mentally unhealthy days. It also shows the size
+of this increase varies by age and the difference is largest among young
+and early-mid adults, especially ages 25–44.</p>
+<p>The vertical distance between male and female lines remains fairly
+constant regardless of legalization status, which indicates women
+consistently report more mentally unhealthy days than men. The effect of
+sports betting legalization is similar for both sexes (this supports the
+non-significant sex × legalization interaction in the regression
+model).</p>
+<p>The graph visually confirms the pattern in the coefficients: among
+younger adults (25–44), the increase associated with sports betting
+legalization is noticeably larger and this decreases with age. This
+suggests that younger and mid-age adults may be more sensitive to
+environmental or policy changes related to gambling or these age groups
+may participate more in gambling or be more exposed to advertising or
+technology that connects them to sports betting markets.</p>
+<p>Sports betting legalization is associated with a higher probability
+of experiencing mentally unhealthy days, especially among adults aged
+25–44, and this pattern is similar for both men and women. The effect
+does not appear uniform across age groups, indicating a meaningful
+interaction between age and policy.</p>
+<div id="overall-conclusions" class="section level2">
+<h2>Overall Conclusions</h2>
+<p>After adjusting for sex and age, living in a state with legal sports
+betting is associated with higher probability of having mentally
+unhealthy days, especially among adults aged 25–44. The effect size is
+around 5–8 percentage points, depending on age group. Men and women are
+affected similarly, which doesn’t align with the Couture et
+al. findings, likely because we were looking at a larger dataset which
+included post-COVID-19 observations. Younger adults (18–24) have the
+highest baseline mental health risk, but legalization effects are
+somewhat stronger for those 25–44. These associations cannot establish
+causality (due to cross-sectional BRFSS data), but they indicate a
+robust correlation.</p>
+</div>
+<div id="limitations" class="section level2">
+<h2>Limitations</h2>
+<p>We are not following the same participants over time which prevents
+establishing causal relationships. We cannot determine whether the
+legalization of sports betting directly contributed to worsening health
+outcomes. Also, the measure of health outcomes are self-reported which
+may introduce recall bias and response bias. Respondents may
+inaccurately recall their health over the past 30 days and under-report
+sensitive behaviors due to stigma.</p>
+<p>The study period includes the COVID-19 pandemic which potentially
+serves as a major confounding event. Changes in health outcomes related
+to the pandemic may coincide with legalization, confounding
+associations. Our exposure variable, <code>sb_legal</code> does not
+account for individual sports betting behavior or the level/intensity of
+exposure, therefore, which only allowed us to address population-level
+associations based on legalization exposure.</p>
+</div>
+<div id="additional-analyses" class="section level2">
+<h2>Additional Analyses</h2>
+<p>There are many additional analyses that could be done on the dataset,
+given more time. This includes finely tuning the regression model and
+addressing confounding factors, like COVID. We observed that mental
+health outcomes decreased overall from 2017-2024, but establishing a
+causal effect of sports betting would require further analysis. We did
+not get a chance to look at the effect of online vs. retail-only sports
+betting legalization (which varies state-to-state), but this would be
+another interesting policy effect to examine.</p>
+</div>
 </div>
 
 
 
+</div>
+</div>
 
 </div>
 
@@ -345,6 +1062,35 @@ $(document).ready(function () {
 
 <!-- code folding -->
 
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
 
 <!-- dynamically load mathjax for compatibility with self-contained -->
 <script>
