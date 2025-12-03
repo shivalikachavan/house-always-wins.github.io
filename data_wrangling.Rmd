@@ -1,30 +1,55 @@
 ---
-title: "data"
-author: "Shivalika Chavan"
-date: "2025-12-02"
-output: html_document
+title: "Data Sources and Cleaning"
+output: 
+  html_document:
+    toc: true
+    toc_float: true
+    code folding: hide
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
+library(tidyverse)
+library(here)
+source(here("source", "load_clean_brfss.R"))
+brfss_data = load_clean_brfss(here("data", "brfss_clean_2017_2024.csv.zip"))
 ```
 
-## R Markdown
+Our analysis relies on combining public health surveillance data with external information about trends in sports gambling.
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+# Data Sources and Scope
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
+Our project utilizes two main sources spanning the period **2017 through 2024**:
 
-```{r cars}
-summary(cars)
-```
+* **Primary Source (Health Outcomes): The Behavioral Risk Factor Surveillance System (BRFSS)**. This is an annual, state-based, nationwide telephone survey (conducted by the CDC)[https://www.cdc.gov/brfss/index.html], providing detailed self-reported health and behavioral data. We analyzed **`r round(nrow(brfss_data)/1000000, digits = 2)` million** completed interviews across all available years. We chose this period as it spans the period before the **2018 Supreme Court ruling (PASPA repeal)**, which allowed many states to legalize sports betting.
 
-## Including Plots
+* **Secondary Sources (Sports Gambling Policy and Market Activity)**: We used data scraped from [Legal Sports Report](https://www.legalsportsreport.com/sports-betting-states/revenue/) for market handle and manually compiled state legalization dates from the [American Gaming Association](https://www.americangaming.org/research/state-of-play-map/). 
 
-You can also embed plots, for example:
+# Data Cleaning and Processing
 
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
+Due to variations in the BRFSS survey over the years, we standardized the data. This process was handled by a dedicated `source/` code folder, with the following functions ensuring data quality and analytical readiness:
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+* **Standardization (`standardize_brfss_variable.R`):** This function resolves inconsistencies in variable names across different survey years (e.g., handling both `HLTHPL1` and `HLTHPL2` which ask the same question) by renaming them to a single standard variable name.
+* **Filtering (`filter_brfss_data.R`):** Ensures only **completed interviews** ($\text{dispcode} = 1100$) are retained and selects the core set of demographic and health columns.
+* **Loading and Merging (`load_clean_brfss.R`):** This critical function finalizes the dataset, recoding numerical responses (e.g., $\text{1}$ to "Male"), and **connecting each interview date to the state's legalization status**.
+
+# Analysis Data Dictionary
+
+Our analysis focuses on the following four core outcomes and the primary treatment variable:
+
+## Treatment Variable (Exposure)
+
+* **$\mathbf{sb\_legal}$** (Sports Betting Legal): A binary flag indicating whether the interview took place **after** sports betting was legalized in that state ($\text{1}$) or before ($\text{0}$).
+
+## Outcome Variables (Adverse Health)
+
+We primarily use binary (Yes/No) measures to capture the prevalence of these adverse outcomes in the population:
+
+* ***Poor Mental Health Day***: The probability that a respondent reported **at least 1 day** of poor mental health in the past 30 days. (Raw Question: "for how many days during the past 30 days was your mental health not good?")
+* ***Poor Physical Health Day***: The probability that a respondent reported **at least 1 day** of poor physical health in the past 30 days. (Raw Question: "for how many days during the past 30 days was your physical health not good?")
+* ***Depression***: Whether a doctor or health professional ever diagnosed the respondent with a depressive disorder.
+* ***Binge Drinking***: Whether the respondent met the threshold for heavy, episodic drinking (5 or more drinks for men, 4 or more for women on one occasion).
+
+## Demographic Variables / Predictors in Regression
+
+To control for social and economic factors influencing health, we include individual-level demographic predictors (e.g., sex, age group, income level, education, and employment status) in our regression models.
