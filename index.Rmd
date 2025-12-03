@@ -1,9 +1,14 @@
 ---
-title: "The House Always Wins? Exploring the Societal Costs of Legal Sports Gambling"
+title: "The House Always Wins? Exploring the Societal Costs of Legalizing Sports Gambling"
 output: 
   html_document:
-    toc: true
-    toc_float: true
 ---
 
+The rapid expansion of legalized sports gambling in the United States has reshaped the landscape of professional sports. Since the Supreme Court ruled in 2018 to repeal the Professional and Amateur Sports Protection Act (PASPA), 39 states have legalized some form of sports betting, generating billions in annual handle (total amount wagered). It feels like there is a new sports gambling scandal every month, most recently the [NBA gambling scandal](https://www.nytimes.com/2025/10/23/nyregion/nba-gambling-scandal-explained.html) and an ongoing debate over [NCAA rules regarding athlete gambling](https://www.espn.com/college-sports/story/_/id/46762598/ncaa-delays-rule-change-permitting-college-athletes-bet-professional-sports), involving the increasingly popular player-specific proposition “prop” bets. 
 
+<iframe width="560" height="315" src="https://www.youtube.com/embed/ZVeWRGpAv6Y?si=DnGdw-WRjuwWEgEw" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
+
+Despite industry claims that legalization promotes consumer protections and tax revenue, concerns persist that widespread access may lead to an increase in gambling participation and adverse financial and health outcomes.
+
+This project, **The House Always Wins? Exploring the Societal Costs of Legal Sports Gambling**, investigates the public health implications of this policy shift. Building on prior scholarship, we integrate Behavioral Risk Factor Surveillance System (BRFSS) data, state-level gambling policy information, and market activity to examine how legalization relates to self-reported mental health outcomes and population-level risk profiles. By combining behavioral surveillance data with policy variation across states, the project aims to generate empirical evidence on how sports gambling laws trend with population health.
