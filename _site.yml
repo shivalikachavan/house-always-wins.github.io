@@ -4,7 +4,7 @@ navbar:
   title: "Home"
   right:
     - text: "Data"
-      href: data.html
+      href: data_wrangling.html
     - text: "Exploratory Data Analysis"
       href: eda.html
     - text: "Additional Analysis"
@@ -15,4 +15,4 @@ navbar:
       href: https://github.com/shivalikachavan/p8105_final
 output:
   html_document:
-    theme: sandstone
+    theme: journal

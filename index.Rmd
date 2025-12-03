@@ -1,11 +1,9 @@
 ---
-title: "My awesome website"
+title: "The House Always Wins? Exploring the Societal Costs of Legal Sports Gambling"
 output: 
   html_document:
     toc: true
     toc_float: true
 ---
 
-# This is Jeff's awesome website
 
-![](https://media.giphy.com/media/drXGoW1iudhKw/giphy.gif)
