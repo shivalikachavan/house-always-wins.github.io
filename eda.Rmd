@@ -7,8 +7,6 @@ output:
     code_folding: hide
   
 ---
-
-Load packages and import cleaned dataframes.
 ```{r setup, message=FALSE}
 knitr::opts_chunk$set(echo = TRUE, collapse = TRUE)
 
