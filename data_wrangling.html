@@ -387,7 +387,7 @@ the data. This process was handled by a dedicated <code>source/</code>
 code folder, with the following functions ensuring data quality and
 analytical readiness:</p>
 <ul>
-<li><strong>Variable Standardization</strong><a
+<li><strong>Variable Standardization</strong> <a
 href="https://github.com/shivalikachavan/p8105_final/blob/main/source/standardize_brfss_variable.R">standardize_brfss_variable.R</a>:
 This function renames variables that have more than one version of the
 same variable (e.g. <code>HLTHPL1</code> and <code>HLTHPL2</code>).
@@ -395,6 +395,58 @@ Seeing that the variables differed in name only (the responses were
 coded in the same way), this was handled by renaming different versions
 to the single standardized name.
 (e.g. <code>hlthpl_standard</code>).</li>
+</ul>
+<pre class="r"><code>standardize_brfss_variable = function(raw_data){
+  
+  column_names = colnames(raw_data)
+  
+  raw_data = 
+    raw_data |&gt; 
+    rename_with(.fn = ~ &quot;hlthpl_standard&quot;, .cols = starts_with(&quot;hlthpl&quot;, ignore.case = FALSE)) |&gt; 
+    rename_with(.fn = ~ &quot;rfdrh_standard&quot;, .cols = starts_with(&quot;rfdrhv&quot;, ignore.case = FALSE)) |&gt; 
+    rename_with(.fn = ~ &quot;rfbing_standard&quot;, .cols = starts_with(&quot;rfbing&quot;, ignore.case = FALSE)) |&gt; 
+    rename_with(.fn = ~ &quot;income_standard&quot;, .cols = starts_with(&quot;income&quot;, ignore.case = FALSE)) |&gt; 
+    rename_with(.fn = ~ &quot;medcost_standard&quot;, .cols = starts_with(&quot;medcost&quot;, ignore.case = FALSE))|&gt; 
+    rename_with(.fn = ~ &quot;addepe_standard&quot;, .cols = starts_with(&quot;addepe&quot;, ignore.case = FALSE))
+  
+  
+  
+    
+  if (!(&quot;sdlonely&quot; %in% column_names)) {
+    raw_data = raw_data |&gt; mutate(sdlonely = NA_integer_)
+  }
+  
+  if (!(&quot;lsatisfy&quot; %in% column_names)) {
+    raw_data = raw_data |&gt; mutate(lsatisfy = NA_integer_)
+  }
+  
+  if (!(&quot;emtsuprt&quot; %in% column_names)) {
+    raw_data = raw_data |&gt; mutate(emtsuprt = NA_integer_)
+  }
+  
+  if (!(&quot;sdhemply&quot; %in% column_names)) {
+    raw_data = raw_data |&gt; mutate(sdhemply = NA_integer_)
+  }
+  
+  if (!(&quot;sdhbills&quot; %in% column_names)) {
+    raw_data = raw_data |&gt; mutate(sdhbills = NA_integer_)
+  }
+  
+  if (!(&quot;sdhutils&quot; %in% column_names)) {
+    raw_data = raw_data |&gt; mutate(sdhutils = NA_integer_)
+  }
+  
+  if (&quot;sex1&quot; %in% column_names) {
+    raw_data = raw_data |&gt; mutate(sex = sex1)
+  }
+  
+  if (!(&quot;urbstat&quot; %in% column_names)) {
+    raw_data = raw_data |&gt; mutate(urbstat = NA_integer_)
+  }
+
+  raw_data
+}</code></pre>
+<ul>
 <li><strong>Filtering</strong> <a
 href="https://github.com/shivalikachavan/p8105_final/blob/main/source/filter_brfss_data.R">filter_brfss_data.R</a>:
 This function keeps the key variables for our study (unique survey
@@ -402,6 +454,29 @@ identifiers, demographic/predictor variables, health/financial outcomes
 variables). It also filters for completed interviews
 (<code>dispcode = 1100</code>) and converts the date of the interview to
 a Date type variable.</li>
+</ul>
+<pre class="r"><code>filter_brfss_data = function(brfss_data_raw, data_year = 2024){
+  
+  column_names = colnames(brfss_data_raw)
+  
+  brfss_data_clean = 
+    brfss_data_raw |&gt; 
+    select(qstver, dispcode, state, seqno, iyear, imonth, iday, 
+           sex, marital, educag, employ1, children, income_standard, urbstat, imprace, ageg5yr, hlthpl_standard, 
+           genhlth, rfhlth, physhlth, phys14d, menthlth, ment14d, poorhlth, medcost_standard, totinda, michd, addepe_standard, 
+           decide, diffalon, lsatisfy, emtsuprt, sdlonely, sdhemply, sdhbills, sdhutils, rfbing_standard, rfdrh_standard
+    ) |&gt; 
+    mutate(
+      date = as.Date(paste(iyear, imonth, iday, sep = &quot;-&quot;))
+    ) |&gt; 
+    filter(
+      dispcode == 1100, 
+      year(date) == data_year
+      ) # only selecting completed interviews in the right year
+  
+  brfss_data_clean
+}</code></pre>
+<ul>
 <li><strong>Loading</strong> <a
 href="https://github.com/shivalikachavan/p8105_final/blob/main/source/load_clean_brfss.R">load_clean_brfss_data.R</a>:
 This function is used to load the cleaned data set into R by recoding
@@ -410,6 +485,246 @@ interview to the status of legalization in that state. This
 <code>sb_legal</code> treatment variable is added by merging with <a
 href="https://github.com/shivalikachavan/p8105_final/blob/main/data/legal_sports_report/state_legalization_dates.csv">state_legalization_dates.csv</a>.</li>
 </ul>
+<pre class="r"><code>load_clean_brfss = function(filepath){
+  
+  #get date when sports betting became legal by state
+  sb_legal_dates = 
+    read_csv(here::here(&quot;data&quot;, &quot;legal_sports_report&quot;,&quot;state_legalization_dates.csv&quot;)) |&gt; 
+    select(first_start, abbr, fips)
+  
+  cleaned_df = 
+    read_csv(filepath) |&gt; 
+    mutate(
+      
+      id = paste0(state, seqno), # concatenating state and seqno to get a unique row id for each interview
+      
+      sex = case_match(sex, 1 ~ &quot;Male&quot;, 2 ~ &quot;Female&quot;, .default = NA) |&gt; as.factor(),
+      
+      marital_status =
+        case_match(
+          marital,
+          1 ~ &quot;Married&quot;,
+          2 ~ &quot;Divorced&quot;,
+          3 ~ &quot;Widowed&quot;,
+          4 ~ &quot;Separated&quot;,
+          5 ~ &quot;Never Married&quot;,
+          6 ~ &quot;Member of an unmarried couple (Partner)&quot;, 
+          .default = NA) |&gt; as.factor(),
+      
+      education_status =
+        case_match(
+          educag,
+          1 ~ &quot;Did not graduate High School&quot;, 
+          2 ~ &quot;Graduated High School&quot;,           
+          3 ~ &quot;Attended College or Technical School&quot;,
+          4 ~ &quot;Graduated from College or Technical School&quot;,
+          .default = NA) |&gt; as.factor(),
+      
+      employment_status =
+        case_match(
+          employ1,
+          1 ~ &quot;Employed for wages&quot;,
+          2 ~ &quot;Self-employed&quot;,
+          3 ~ &quot;Out of work (&lt;1 year)&quot;,
+          4 ~ &quot;Out of work (&gt;1 year)&quot;,
+          5 ~ &quot;Homemaker&quot;,
+          6 ~ &quot;Student&quot;,
+          7 ~ &quot;Retired&quot;,
+          8 ~ &quot;Unable to work (Disabled)&quot;,
+          .default = NA) |&gt; as.factor(),
+      
+      children_in_household = case_match(children, 88 ~ 0, 99 ~ NA, .default = children),
+      
+      income_level =
+        case_match(
+          income_standard,
+          1 ~ &quot;Less than $10,000&quot;,
+          2 ~ &quot;$10,000 to &lt; $15,000&quot;,
+          3 ~ &quot;$15,000 to &lt; $20,000&quot;,
+          4 ~ &quot;$20,000 to &lt; $25,000&quot;,
+          5 ~ &quot;$25,000 to &lt; $35,000&quot;,
+          6 ~ &quot;$35,000 to &lt; $50,000&quot;,
+          7 ~ &quot;$50,000 to &lt; $75,000&quot;,
+          c(8, 9, 10, 11) ~ &quot;$75,000 or more&quot;,
+          .default = NA 
+        ) |&gt; as.factor(),
+      
+      insurance_coverage =
+        case_match(
+          hlthpl_standard,
+          1 ~ &quot;Have some form of insurance&quot;,
+          2 ~ &quot;Do not have some form of health insurance&quot;,
+          9 ~ NA,
+          .default = NA) |&gt; as.factor(),
+      
+      race =
+        case_match(
+          imprace,
+          1 ~ &quot;White, Non-Hispanic&quot;,
+          2 ~ &quot;Black, Non-Hispanic&quot;,
+          3 ~ &quot;Asian, Non-Hispanic&quot;,
+          4 ~ &quot;American Indian, Alaska Native, Non-Hispanic&quot;,
+          5 ~ &quot;Hispanic&quot;,
+          6 ~ &quot;Other/Multiracial, Non-Hispanic&quot;,
+          .default = NA) |&gt; as.factor(),
+      
+      age_group_5yr =
+        case_match(
+          ageg5yr,
+          1 ~ &quot;18-24&quot;,
+          2 ~ &quot;25-29&quot;,
+          3 ~ &quot;30-34&quot;,
+          4 ~ &quot;35-39&quot;,
+          5 ~ &quot;40-44&quot;,
+          6 ~ &quot;45-49&quot;,
+          7 ~ &quot;50-54&quot;,
+          8 ~ &quot;55-59&quot;,
+          9 ~ &quot;60-64&quot;,
+          10 ~ &quot;65-69&quot;,
+          11 ~ &quot;70-74&quot;,
+          12 ~ &quot;75-79&quot;,
+          13 ~ &quot;80 or older&quot;,
+          .default = NA) |&gt; as.factor(),
+      
+      urban_status =
+        case_match(
+          urbstat,
+          1 ~ &quot;Urban counties&quot;,
+          2 ~ &quot;Rural counties&quot;,
+          .default = NA) |&gt; as.factor(),
+      
+      general_health =
+        case_match(
+          genhlth,
+          1 ~ &quot;Excellent&quot;,
+          2 ~ &quot;Very Good&quot;,
+          3 ~ &quot;Good&quot;,
+          4 ~ &quot;Fair&quot;,
+          5 ~ &quot;Poor&quot;,
+          .default = NA) |&gt; as.factor(),
+      
+      general_health_refactored =
+        case_match(
+          rfhlth,
+          1 ~ &quot;Good or Better Health&quot;,
+          2 ~ &quot;Fair or Poor Health&quot;,
+          .default = NA) |&gt; as.factor(),
+      
+      michd = case_match(michd, 1 ~ &quot;Yes&quot;, 2 ~ &quot;No&quot;, .default = NA) |&gt; as.factor(),
+      
+      physical_health = case_match(physhlth, 88 ~ 0, 77 ~ NA, 99 ~ NA, .default = physhlth),
+      physical_health_not_good_days = case_match(phys14d, 1 ~ &quot;0&quot;, 2 ~ &quot;1-13&quot;, 3 ~ &quot;14+&quot;, 9 ~ NA, .default = NA) |&gt; as.factor(),
+      leisure_physical_activity_last_30_days = case_match(totinda, 1 ~ &quot;Yes&quot;, 2 ~ &quot;No&quot;, 9 ~ NA, .default = NA) |&gt; as.factor(),
+      
+      mental_health = case_match(menthlth, 88 ~ 0, 77 ~ NA, 99 ~ NA, .default = menthlth),
+      mental_health_not_good_days = case_match(ment14d, 1 ~ &quot;0&quot;, 2 ~ &quot;1-13&quot;, 3 ~ &quot;14+&quot;, 9 ~ NA, .default = NA) |&gt; as.factor(),
+      
+      depressive_disorder = case_match(addepe_standard, 1 ~ &quot;Yes&quot;, 2 ~ &quot;No&quot;, .default = NA) |&gt; as.factor(),
+      
+      poor_health = case_match(poorhlth, 88 ~ 0, 77 ~ NA, 99 ~ NA, .default = poorhlth),
+      
+      binge_drink = case_match(rfbing_standard, 1 ~ &quot;No&quot;, 2 ~ &quot;Yes&quot;, 9 ~ NA, .default = NA) |&gt; as.factor(),
+      heavy_drink = case_match(rfdrh_standard, 1 ~ &quot;No&quot;, 2 ~ &quot;Yes&quot;, 9 ~ NA, .default = NA) |&gt; as.factor(),
+      
+      medical_cost_barrier = case_match(medcost_standard, 1 ~ &quot;Yes&quot;, 2 ~ &quot;No&quot;, 7 ~ NA, 9 ~ NA, .default = NA) |&gt; as.factor(),
+      
+      difficulty_self_care = case_match(diffalon, 1 ~ &quot;Yes&quot;, 2 ~ &quot;No&quot;, .default = NA) |&gt; as.factor(),
+    
+      life_satisfaction =
+        case_match(
+          lsatisfy,
+          1 ~ &quot;Very satisfied&quot;,
+          2 ~ &quot;Satisfied&quot;,
+          3 ~ &quot;Dissatisfied&quot;,
+          4 ~ &quot;Very dissatisfied&quot;,
+          .default = NA_character_
+        ) |&gt; as.factor(),
+      
+      emotional_support = 
+        case_match(
+          emtsuprt,
+          1 ~ &quot;Always&quot;,
+          2 ~ &quot;Usually&quot;,
+          3 ~ &quot;Sometimes&quot;,
+          4 ~ &quot;Rarely&quot;,
+          5 ~ &quot;Never&quot;,
+          .default = NA_character_
+        ) |&gt; as.factor(),
+      
+      loneliness =
+        case_match(
+          sdlonely,
+          1 ~ &quot;Always&quot;,
+          2 ~ &quot;Usually&quot;,
+          3 ~ &quot;Sometimes&quot;,
+          4 ~ &quot;Rarely&quot;,
+          5 ~ &quot;Never&quot;,
+          .default = NA_character_
+        ) |&gt; as.factor(),
+      
+      lost_reduced_employment = case_match(sdhemply, 1 ~ &quot;Yes&quot;, 2 ~ &quot;No&quot;, .default = NA) |&gt; as.factor(),
+      
+      financial_strain_bills = case_match(sdhbills, 1 ~ &quot;Yes&quot;, 2 ~ &quot;No&quot;, .default = NA) |&gt; as.factor(),
+      financial_strain_utilities = case_match(sdhbills, 1 ~ &quot;Yes&quot;, 2 ~ &quot;No&quot;, .default = NA) |&gt; as.factor(),
+      
+      # Adding binary versions of outcomes for prop tests and regression
+      any_physical_health_not_good_days = 
+        case_match(
+          physical_health_not_good_days,
+          &quot;0&quot; ~ FALSE,
+          &quot;1-13&quot; ~ TRUE,
+          &quot;14+&quot; ~ TRUE
+        ),
+      any_mental_health_not_good_days = 
+        case_match(
+          mental_health_not_good_days,
+          &quot;0&quot; ~ FALSE,
+          &quot;1-13&quot; ~ TRUE,
+          &quot;14+&quot; ~ TRUE
+        ),
+      has_depressive_disorder = 
+        case_match(
+          depressive_disorder,
+          &quot;No&quot; ~ FALSE, 
+          &quot;Yes&quot; ~ TRUE
+        ),
+      has_binge_drink = 
+        case_match(
+          binge_drink,
+          &quot;No&quot; ~ FALSE, 
+          &quot;Yes&quot; ~ TRUE
+        )
+    ) |&gt;
+    
+    #add in whether sports betting was legal at the time of the interview
+    #NOTE: legalization dates are set to the first of the month so we will check that the interview was the following month (not day) by temporarily creating a new column month_of_interview
+    merge(sb_legal_dates, by.x = &quot;state&quot;, by.y = &quot;fips&quot;, all = TRUE) |&gt; 
+    mutate(
+      month_of_interview = floor_date(date, unit = &quot;month&quot;),
+      sb_legal = (as.numeric(month_of_interview &gt; first_start))
+    ) |&gt; 
+    # dropping any overwritten variables
+    select( 
+        #Survey Identifiers
+        id, date, qstver, 
+        # Demographic/Predictor Variables
+        state, urban_status, age_group_5yr, sex, marital_status, education_status, employment_status, children_in_household, income_level, race, insurance_coverage, 
+        # Health/Financial Outcomes Variables
+        medical_cost_barrier, general_health, general_health_refactored, michd, 
+        physical_health, physical_health_not_good_days, leisure_physical_activity_last_30_days,
+        mental_health, mental_health_not_good_days, poor_health, depressive_disorder, difficulty_self_care,
+        life_satisfaction, emotional_support, loneliness,
+        binge_drink, heavy_drink,
+        lost_reduced_employment, financial_strain_bills, financial_strain_utilities,
+        any_physical_health_not_good_days, any_mental_health_not_good_days, 
+        has_depressive_disorder, has_binge_drink,
+        #Sports Betting Legal
+        sb_legal
+      ) 
+  
+  
+  cleaned_df
+}</code></pre>
 </div>
 <div id="analysis-data-dictionary" class="section level1">
 <h1>Analysis Data Dictionary</h1>
