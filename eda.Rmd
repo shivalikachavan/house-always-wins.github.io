@@ -375,7 +375,7 @@ We can see that Nevada and New Jersey have the highest handle per capita.
 
 ### Interactive Handle by State and Sports season
 
-Use the chart below to select states from the legend to compare to New York. You can use the buttons to toggle highlights on the NFL season (red with orange line for the Superbowl) or NCAA Basketball March Madness. 
+Use the chart below to select states from the legend to compare to New York.
 
 ```{r}
 #Get revenue by state
