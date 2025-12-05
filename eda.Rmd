@@ -555,34 +555,34 @@ shapes = c(lapply(nfl_dotted, function(date_val) {
 
 
 #add buttons to show/hide shapes
-fig = fig |>  layout(updatemenus = list(
-    list(
-      type = "buttons",
-      direction = "right",
-      xanchor = "left",
-      yanchor = "top",
-      x = 0.1, # Position the menu at 10% from the left
-      y = 1.2, # Position the menu at 110% from the bottom
-      pad = list("r" = 10, "t" = 10),
-      buttons = list(
-        list(
-          method = "relayout",
-          args = list(list(shapes = list())),
-          label = "Hide seasons"
-        ),
-        list(
-          method = "relayout",
-          label = "Show NFL season",
-          args = list(list(shapes = nfl_shape_list))
-        ),
-        list(
-          method = "relayout",
-          label = "Show NCAA season",
-          args = list(list(shapes = ncaa_shape_list))
-        )
-      )
-    )
-  ))
+# fig = fig |>  layout(updatemenus = list(
+#     list(
+#       type = "buttons",
+#       direction = "right",
+#       xanchor = "left",
+#       yanchor = "top",
+#       x = 0.1, # Position the menu at 10% from the left
+#       y = 1.2, # Position the menu at 110% from the bottom
+#       pad = list("r" = 10, "t" = 10),
+#       buttons = list(
+#         list(
+#           method = "relayout",
+#           args = list(list(shapes = list())),
+#           label = "Hide seasons"
+#         ),
+#         list(
+#           method = "relayout",
+#           label = "Show NFL season",
+#           args = list(list(shapes = nfl_shape_list))
+#         ),
+#         list(
+#           method = "relayout",
+#           label = "Show NCAA season",
+#           args = list(list(shapes = ncaa_shape_list))
+#         )
+#       )
+#     )
+#   ))
 
 fig
 ```
