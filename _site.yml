@@ -29,7 +29,7 @@ navbar:
     - text: "So what?"
       href: conclusions.html
     - text: "Report"
-      href: index.html
+      href: Final_Report.html
     - icon: fa-github fa-lg
       href: https://github.com/shivalikachavan/p8105_final
 output:

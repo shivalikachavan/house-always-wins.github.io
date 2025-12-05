@@ -55,13 +55,13 @@ This project, **The House Always Wins? Exploring the Societal Costs of Legalizin
       </tr>
       <tr>
         <td style="padding-top: 5px; font-size: 0.9em;">
-          <a href="[https://angbailey.github.io/index.html](https://angbailey.github.io/index.html)" target="_blank">Personal Website</a>
+          <a href="https://angbailey.github.io/index.html" target="_blank">Personal Website</a>
         </td>
         <td style="padding-top: 5px; font-size: 0.9em;">
-          <a href="[https://shivalikachavan.github.io](https://shivalikachavan.github.io)" target="_blank">Personal Website</a>
+          <a href="https://shivalikachavan.github.io" target="_blank">Personal Website</a>
         </td>
         <td style="padding-top: 5px; font-size: 0.9em;">
-          <a href="[https://j4gray.github.io/](https://j4gray.github.io/)" target="_blank">Personal Website</a>
+          <a href="https://j4gray.github.io/" target="_blank">Personal Website</a>
         </td>
       </tr>
     </tbody>
