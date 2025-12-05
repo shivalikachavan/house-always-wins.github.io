@@ -2,7 +2,7 @@
 output: 
   html_document:
     toc: true
-    toc_float: true
+    toc_float: false
     code_folding: hide
 ---
 
