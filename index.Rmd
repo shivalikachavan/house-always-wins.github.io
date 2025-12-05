@@ -23,3 +23,47 @@ It seems like there is a new sports gambling scandal every month, most recently 
 Despite industry claims that legalization promotes consumer protections and tax revenue, concerns persist that widespread access may lead to an increase in gambling participation and adverse financial and health outcomes.
 
 This project, **The House Always Wins? Exploring the Societal Costs of Legalizing Sports Gambling**, investigates the public health implications of this policy shift. Building on prior scholarship, we integrate Behavioral Risk Factor Surveillance System (BRFSS) data, state-level gambling policy information, and market activity to examine how legalization relates to self-reported mental health outcomes and population-level risk profiles. By combining behavioral surveillance data with policy variation across states, the project aims to generate empirical evidence on how sports gambling laws trend with population health.
+
+# Meet the Team
+
+<div style="overflow-x: auto;">
+  <table style="width: 100%; border: none; border-collapse: collapse; text-align: center;">
+    <thead>
+      <tr>
+        <th style="width: 33%;">Angelica Bailey</th>
+        <th style="width: 34%;">Shivalika Chavan</th>
+        <th style="width: 33%;">Julia Gray</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td style="padding: 10px;">
+          <img src="./images/angelica.png" 
+               alt="Angelica Bailey"
+               style="width: 200px; height: 200px; object-fit: cover; border-radius: 50%; border: 3px solid #DB7069;">
+        </td>
+        <td style="padding: 10px;">
+          <img src="./images/shivalika.jpeg" 
+               alt="Shivalika Chavan"
+               style="width: 200px; height: 200px; object-fit: cover; border-radius: 50%; border: 3px solid #DB7069;">
+        </td>
+        <td style="padding: 10px;">
+          <img src="./images/julia.jpeg" 
+               alt="Julia Gray"
+               style="width: 200px; height: 200px; object-fit: cover; border-radius: 50%; border: 3px solid #DB7069;">
+        </td>
+      </tr>
+      <tr>
+        <td style="padding-top: 5px; font-size: 0.9em;">
+          <a href="[https://angbailey.github.io/index.html](https://angbailey.github.io/index.html)" target="_blank">Personal Website</a>
+        </td>
+        <td style="padding-top: 5px; font-size: 0.9em;">
+          <a href="[https://shivalikachavan.github.io](https://shivalikachavan.github.io)" target="_blank">Personal Website</a>
+        </td>
+        <td style="padding-top: 5px; font-size: 0.9em;">
+          <a href="[https://j4gray.github.io/](https://j4gray.github.io/)" target="_blank">Personal Website</a>
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
