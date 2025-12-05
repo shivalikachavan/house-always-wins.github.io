@@ -10,9 +10,8 @@
 
 
 
-<meta name="date" content="2025-12-02" />
 
-<title>Additional Analysis</title>
+<title>additional_analysis.knit</title>
 
 <script src="site_libs/header-attrs-2.29/header-attrs.js"></script>
 <script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
@@ -345,12 +344,30 @@ div.tocify {
       <a href="eda.html#BRFSS">BRFSS</a>
     </li>
     <li>
-      <a href="shiny.html">Demographic Dashboard</a>
+      <a href="https://ab6168.shinyapps.io/shiny_app/">Demographic Dashboard</a>
     </li>
   </ul>
 </li>
-<li>
-  <a href="additional_analysis.html">Additional Analysis</a>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Additional Analysis
+     
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+    <li>
+      <a href="additional_analysis.html#Proportion_Tests">Proportion Tests</a>
+    </li>
+    <li>
+      <a href="additional_analysis.html#Fischer’s_Exact_Test">Fischer's Exact Test</a>
+    </li>
+    <li>
+      <a href="additional_analysis.html#Linear_Regression">Linear Regression</a>
+    </li>
+    <li>
+      <a href="additional_analysis.html#Discussion">Discussion</a>
+    </li>
+  </ul>
 </li>
 <li>
   <a href="conclusions.html">So what?</a>
@@ -378,8 +395,6 @@ div.tocify {
 
 
 
-<h1 class="title toc-ignore">Additional Analysis</h1>
-<h4 class="date">2025-12-02</h4>
 
 </div>
 
@@ -416,18 +431,19 @@ years_in_data = unique(year(pull(sb_rev_by_month, month)))
 outcome_vars = c(&quot;any_physical_health_not_good_days&quot;, &quot;any_mental_health_not_good_days&quot;, &quot;has_depressive_disorder&quot;, &quot;has_binge_drink&quot;)
 
 theme_set(theme_minimal() + theme(legend.position = &quot;bottom&quot;))</code></pre>
-<div id="additional-analysis" class="section level1">
-<h1>Additional analysis</h1>
 <p>To test the relationship between sports betting legalization and
-health outcomes, we employed two statistical approaches: a proportion
-test to compare the prevalence of adverse outcomes before and after the
-legalization of sports betting, and a Fisher’s Exact Test to calculate
-the Relative Risk (RR) of these outcomes in states where sports betting
-is legal vs. states where it is illegal for the most recent data in
-2024. We compared outcome rates in “exposed” (sports betting is legal)
-and “unexposed” (sports betting is not legal) populations.</p>
-<div id="prop-tests" class="section level2">
-<h2>Prop Tests</h2>
+health outcomes, we employed several statistical approaches: a
+proportion test to compare the prevalence of adverse outcomes before and
+after the legalization of sports betting, and a Fisher’s Exact Test to
+calculate the Relative Risk (RR) of these outcomes in states where
+sports betting is legal vs. states where it is illegal (for the most
+recent data in 2024). We compared outcome rates in “exposed” (sports
+betting is legal) and “unexposed” (sports betting is not legal)
+populations. We also used a linear regression model to look at the
+effect of legalized sports betting on any bad mental health days, and
+the interaction between sex and age.</p>
+<div id="proportion-tests" class="section level2">
+<h2>Proportion Tests</h2>
 <p>Our one-sided two sample proportion tests are examining whether there
 is a significant change (baseline is lower) in the rates of the 4 health
 outcomes. In the first test, for example, the null hypothesis is that
@@ -489,41 +505,21 @@ combine_plots(prop_tests_sb_legal)</code></pre>
   factor_significant()
 
 combine_plots(prop_tests_sb_legal)</code></pre>
-<div class="scroll-container">
 <h3>
 Benchmark
 </h3>
-<img src="additional_analysis_files/figure-html/prop_test_benchmark.png" alt="Benchmark">
+<p><img src="additional_analysis_files/figure-html/prop_test_benchmark.png" alt="Benchmark"></p>
 <h3>
 Sports Betting Legal
 </h3>
-<img src="additional_analysis_files/figure-html/prop_test_sb_legal.png" alt="Sports Betting Legal">
+<p><img src="additional_analysis_files/figure-html/prop_test_sb_legal.png" alt="Sports Betting Legal"></p>
 <h3>
 Sports Betting Legal (Age &lt; 50)
 </h3>
 <p><img src="additional_analysis_files/figure-html/prop_test_sb_legal_age.png" alt="Sports Betting Legal (Age < 50)"></p>
 </div>
-<style>
-/* CSS to create the scrollable gallery */
-.scroll-container {
-    /* Set the fixed height of the viewing window */
-    max-height: 1000px; 
-    /* This is the key: enables the vertical scroll bar */
-    overflow-y: auto; 
-    border: 1px solid #ddd;
-    padding: 10px;
-}
-
-.scroll-container img {
-    /* Ensures the image fills the container width */
-    width: 100%; 
-    height: auto;
-    margin-bottom: 10px; 
-}
-</style>
-</div>
 <div id="fischers-exact-test" class="section level2">
-<h2>Fischer’s exact test</h2>
+<h2>Fischer’s Exact Test</h2>
 <div
 id="relative-risk-of-poor-mental-health-outcomes-in-legal-vs.-non-legal-states-in-2024"
 class="section level4">
@@ -891,9 +887,8 @@ pred_df |&gt;
 <p><img src="additional_analysis_files/figure-html/unnamed-chunk-8-1.png" width="672" style="display: block; margin: auto;" /></p>
 </div>
 </div>
-</div>
-<div id="discussion" class="section level1">
-<h1>Discussion</h1>
+<div id="discussion" class="section level2">
+<h2>Discussion</h2>
 <p>Overall, we found a significant relationship between legalization of
 sports betting and poor physical/mental health. It is important to note
 that in our statistical analyses, even if the effect size was small, we

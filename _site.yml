@@ -14,7 +14,15 @@ navbar:
         - text: "Demographic Dashboard"
           href: https://ab6168.shinyapps.io/shiny_app/
     - text: "Additional Analysis"
-      href: additional_analysis.html
+      menu:
+        - text: "Proportion Tests"
+          href: additional_analysis.html#Proportion_Tests
+        - text: "Fischer's Exact Test"
+          href: additional_analysis.html#Fischer’s_Exact_Test
+        - text: "Linear Regression"
+          href: additional_analysis.html#Linear_Regression
+        - text: "Discussion"
+          href: additional_analysis.html#Discussion
     - text: "So what?"
       href: conclusions.html
     - icon: fa-github fa-lg

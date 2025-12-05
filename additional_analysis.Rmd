@@ -1,6 +1,4 @@
 ---
-title: "Additional Analysis"
-date: "2025-12-02"
 output: 
   html_document:
     toc: true
@@ -43,11 +41,9 @@ outcome_vars = c("any_physical_health_not_good_days", "any_mental_health_not_goo
 theme_set(theme_minimal() + theme(legend.position = "bottom"))
 ```
 
-# Additional analysis
+To test the relationship between sports betting legalization and health outcomes, we employed several statistical approaches: a proportion test to compare the prevalence of adverse outcomes before and after the legalization of sports betting, and a Fisher's Exact Test to calculate the Relative Risk (RR) of these outcomes in states where sports betting is legal vs. states where it is illegal (for the most recent data in 2024). We compared outcome rates in "exposed" (sports betting is legal) and "unexposed" (sports betting is not legal) populations. We also used a linear regression model to look at the effect of legalized sports betting on any bad mental health days, and the interaction between sex and age. 
 
-To test the relationship between sports betting legalization and health outcomes, we employed two statistical approaches: a proportion test to compare the prevalence of adverse outcomes before and after the legalization of sports betting, and a Fisher's Exact Test to calculate the Relative Risk (RR) of these outcomes in states where sports betting is legal vs. states where it is illegal for the most recent data in 2024. We compared outcome rates in "exposed" (sports betting is legal) and "unexposed" (sports betting is not legal) populations. 
-
-## Prop Tests
+## Proportion Tests
 
 Our one-sided two sample proportion tests are examining whether there is a significant change (baseline is lower) in the rates of the 4 health outcomes. In the first test, for example, the null hypothesis is that the rate of a particular outcome (e.g. binge drinking) is the same in 2017 and in 2024. The alternative is that the rate of binge drinking was less in 2017 that it was in 2024. 
 
@@ -109,35 +105,16 @@ prop_tests_sb_legal =
 combine_plots(prop_tests_sb_legal)
 ```
 
-<div class="scroll-container">
 <h3>Benchmark</h3>
-  <img src="additional_analysis_files/figure-html/prop_test_benchmark.png" alt="Benchmark">
+<img src="additional_analysis_files/figure-html/prop_test_benchmark.png" alt="Benchmark">
+
 <h3>Sports Betting Legal</h3>
-  <img src="additional_analysis_files/figure-html/prop_test_sb_legal.png" alt="Sports Betting Legal">
+<img src="additional_analysis_files/figure-html/prop_test_sb_legal.png" alt="Sports Betting Legal">
+
 <h3>Sports Betting Legal (Age < 50)</h3>
-  <img src="additional_analysis_files/figure-html/prop_test_sb_legal_age.png" alt="Sports Betting Legal (Age < 50)">
-</div>
+<img src="additional_analysis_files/figure-html/prop_test_sb_legal_age.png" alt="Sports Betting Legal (Age < 50)">
 
-<style>
-/* CSS to create the scrollable gallery */
-.scroll-container {
-    /* Set the fixed height of the viewing window */
-    max-height: 1000px; 
-    /* This is the key: enables the vertical scroll bar */
-    overflow-y: auto; 
-    border: 1px solid #ddd;
-    padding: 10px;
-}
-
-.scroll-container img {
-    /* Ensures the image fills the container width */
-    width: 100%; 
-    height: auto;
-    margin-bottom: 10px; 
-}
-</style>
-
-## Fischer's exact test
+## Fischer's Exact Test
 #### Relative Risk of Poor Mental Health Outcomes in Legal vs. Non-Legal states in 2024
 
 In 2024, what is the risk of having poor mental health outcomes based on state legalization?
@@ -271,7 +248,7 @@ pred_df |>
   )
 ```
 
-# Discussion
+## Discussion
 
 Overall, we found a significant relationship between legalization of sports betting and poor physical/mental health. It is important to note that in our statistical analyses, even if the effect size was small, we still had a small p-value. This is likely due to the size of the BRFSS dataset (~2.7 million observations).
 

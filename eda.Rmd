@@ -469,6 +469,15 @@ ncaa_event_dates = tibble(
 
 ncaa_solid = pull(ncaa_event_dates, date)
 
+fig = fig |> 
+  layout(
+    xaxis = list(
+      title = "Date",
+      range = c("2018-05-01", "2025-09-01"), 
+      tickformat = "%b %Y" 
+    )
+  )
+
 for (i in 1:nrow(states)) {
   row = states[i,]
   fig = fig |> add_trace(
@@ -997,8 +1006,3 @@ brfss_data |>
 ```
 
 We can see that binge drinking is most common among younger adults with the peak in the 25-29 age group. It steadily declines as age increases.
-
-
-
-
-
