@@ -1,8 +1,6 @@
 ---
-title: "P8105 Final Report"
-author: "Shivalika Chavan, Angelica Bailey, Julia Gray"
-date: "2025-11-28"
-output: github_document
+title: "Project Final Report"
+output: html_document
 ---
 ```{r setup, message = FALSE}
 knitr::opts_chunk$set(echo = TRUE, collapse = TRUE)
