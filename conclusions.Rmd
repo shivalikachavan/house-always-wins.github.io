@@ -1,7 +1,7 @@
 ---
 title: "Conclusions"
 output: 
-  html_document:
+  html_document
 ---
 
 After adjusting for sex and age, living in a state with legal sports betting is associated with higher probability of having mentally unhealthy days, especially among adults aged 25–44. The effect size is around 5–8 percentage points, depending on age group. Men and women are affected similarly, which doesn't align with the Couture et al. findings, likely because we were looking at a larger dataset which included post-COVID-19 observations. Younger adults (18–24) have the highest baseline mental health risk, but legalization effects are somewhat stronger for those 25–44. These associations cannot establish causality (due to cross-sectional BRFSS data), but they indicate a robust correlation.
