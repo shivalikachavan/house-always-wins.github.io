@@ -34,6 +34,7 @@ sb_rev_by_month = read_csv(here("data", "legal_sports_report", "sb_rev_by_month.
 sb_rev_by_state_month = read_csv(here("data", "legal_sports_report",'sb_rev_by_state_month.csv'))
 sb_rev_by_state = read_csv(here("data", "legal_sports_report", "sb_rev_by_state.csv"))
 state_pop = read_csv(here("data", "state_population_census.csv"))
+state_handle_channel = read_csv(here("data","legal_sports_report", "state_handle_by_channel.csv"))
 
 years_in_data = unique(year(pull(sb_rev_by_month, month)))
 
@@ -44,7 +45,7 @@ outcome_vars = c("any_physical_health_not_good_days", "any_mental_health_not_goo
 
 ## Sports Betting
 
-We begin our analysis by exploring trends in the sports betting industry itself and how these trends align with the growing number of states that legalized sports betting over time.  
+We begin our analysis by exploring trends in the sports betting industry itself and how these trends align with the growing number of states that legalized sports betting over time. We looked at total handle which is the total amount wagered regardless of the outcome of the bet (as opposed to revenue).
 
 ```{r}
 get_n_states_legal = function(input_month) {
@@ -234,7 +235,10 @@ fig = fig |>
 fig
 ```
 
-```{r}
+### Handle by Channel in 2024
+
+```{r eval=FALSE}
+# ggplot version
 sb_rev_by_state_month |> 
   mutate(handle_B = handle / 1e9) |>
   mutate(year = year(month)) |>   # Extract year
@@ -258,9 +262,60 @@ sb_rev_by_state_month |>
   theme_minimal()
 ```
 
-We can see New York has the highest handle which makes sense since it is the most populous state. We can get a sense of the popularity of sports gambling by looking at total handle per capita using US census data for total population by state.
+Most sports betting occurs online, although there are a few states that only allow in person sports betting.
 
 ```{r}
+#plotly version
+sb_rev_by_state_month |> 
+  mutate(year = year(month)) %>%  # Extract year
+  group_by(state, year) %>%                   # Group by year
+  summarize(
+    total_handle = sum(handle, na.rm = TRUE),
+  ) |> 
+  filter(year == 2024) |> 
+  ungroup() |> 
+  mutate(state = case_when(
+    state == "District of Columbia" ~ "DC",# Keep original row names for other categories
+    TRUE ~ state
+  )) |> 
+  left_join(select(state_handle_channel, state, pct_online), by = "state") |> 
+  mutate(
+      state = fct_reorder(state, total_handle),
+      online = if_else(!is.na(pct_online), total_handle * pct_online, 0),
+      #online = total_handle * pct_online,
+      in_person = if_else(!is.na(pct_online), total_handle * (1 - pct_online), 0),
+      #retail = total_handle * (1 - pct_online),
+      not_specified =  if_else(is.na(pct_online), total_handle, 0)
+  ) |> 
+  select(state, online, in_person, not_specified, pct_online) |> 
+  pivot_longer(
+    cols = c(online, in_person, not_specified),
+    names_to = "channel"
+  ) |> 
+  mutate(
+    hover = paste("<b>",state,"</b>", '<br>', 
+                  "$", format(value / 1000000000, digits = 2), "B", "<br>", 
+                  (pct_online * 100), "% online",
+                  "<extra></extra>")) |> 
+  plot_ly(y = ~state, x = ~value, color = ~channel, type = 'bar', hovertemplate = ~hover, orientation='h') |> 
+  layout(
+    barmode = 'stack',
+    font = list(family = "Courier New", size = 8),
+        #legend = list(orientation = 'v',
+        #            yanchor = "center",
+        #            traceorder = "reversed", y = 0.5,
+        #            font = list(size = 10)),
+         xaxis = list(title = list(text ='Cumulative Handle', font = list(size = 12))),
+         yaxis = list(title = list(text ='', font = list(size = 12)))
+    )
+```
+
+We can see New York has the highest handle which makes sense since it is the most populous state. We can get a sense of the popularity of sports gambling by looking at total handle per capita using US census data for total population by state.
+
+### Handle per Capita in 2024
+
+```{r eval=FALSE}
+#ggplot version
 sb_rev_by_state_month |> 
   mutate(year = year(month)) |>  
   group_by(state, year) |>                 
@@ -286,7 +341,252 @@ sb_rev_by_state_month |>
   theme_minimal()
 ```
 
+```{r}
+sb_rev_by_state_month |> 
+  mutate(year = year(month)) %>%  # Extract year
+  group_by(state, year) %>%                   # Group by year
+  summarize(
+    total_handle = sum(handle, na.rm = TRUE),
+  ) |> 
+  filter(year == 2024) |> 
+  ungroup() |> 
+  left_join(select(state_pop, state, "2024"), by = "state") |> 
+  rename(population_2024 = '2024') |> 
+  mutate(
+    handle_per_capita = total_handle / population_2024,
+    state = case_when(
+      state == "District of Columbia" ~ "DC",# Keep original row names for other categories
+      TRUE ~ state
+    ),
+    state = fct_reorder(state, handle_per_capita)
+  ) |> 
+  plot_ly(y = ~state, x = ~handle_per_capita, type = 'bar', orientation='h') |> 
+  layout(font = list(size = 8),
+        legend = list(orientation = 'v',
+                    yanchor = "center",
+                    traceorder = "reversed", y = 0.5,
+                    font = list(size = 10)),
+         xaxis = list(title = list(text ='Handle per Capita ($)', font = list(size = 12))),
+         yaxis = list(title = list(text ='', font = list(size = 12)))
+         )
+```
+
 We can see that Nevada and New Jersey have the highest handle per capita.
+
+### Interactive Handle by State and Sports season
+
+Use the chart below to select states from the legend to compare to New York. You can use the buttons to toggle highlights on the NFL season (red with orange line for the Superbowl) or NCAA Basketball March Madness. 
+
+```{r}
+#Get revenue by state
+
+states = sb_rev_by_state_month |> 
+  select(state) |> 
+  unique() |> 
+  mutate(
+    state_trace = str_replace_all(state, " ", "")
+  ) |> 
+  filter(
+    state != "New York"
+  )
+
+
+state_hidden_df = sb_rev_by_state_month |> 
+  select(month, state, handle) |> 
+  mutate(
+    state = str_replace_all(state, " ", "")
+  ) |> 
+  pivot_wider(
+    names_from = state,
+    values_from = handle
+  ) |> 
+  arrange(month) 
+  #mutate(across(everything(), ~replace_na(., 0))) |> 
+
+#create figure
+fig = state_hidden_df |> 
+  plot_ly(x = ~month, colors = "Set1") |> 
+  layout(font = list(size = 8),
+         xaxis = list(title = list(text ='Date', font = list(size = 12))),
+         yaxis = list(title = list(text ='Handle ($)', font = list(size = 12)))
+         ) |> 
+  add_trace(y = ~NewYork, name = "New York",  type = 'scatter', mode = 'lines', visible = TRUE, color="N")
+
+#add in lines for NFL season and march madness
+years_in_data = unique(year(sb_rev_by_state_month$month)) 
+
+nfl_event_dates = tibble(
+  date = c(
+    ymd(paste(years_in_data, "09", "01", sep = "-")),
+    ymd(paste(years_in_data, "01", "01", sep = "-")),
+    ymd(paste(years_in_data, "02", "01", sep = "-"))
+    ),
+  
+  type = case_when(
+    month(date) == 2 ~ "Solid", 
+    TRUE ~ "Dotted" 
+    ),
+  
+  label = case_when(
+    month(date) == 9 ~ "Start of Season",
+    month(date) == 1 ~ "End of Season",
+    month(date) == 2 ~ "Super Bowl"
+    )
+  ) |> 
+  filter(date >= min(sb_rev_by_state_month$month), date <= max(sb_rev_by_state_month$month))
+
+nfl_season = nfl_event_dates |> 
+  filter(type == "Dotted") |> 
+  arrange(date) |> 
+  mutate(
+    year = year(date - months(6))
+  ) |> 
+  pivot_wider(
+    names_from = "label",
+    values_from = "date"
+  ) |> 
+  janitor::clean_names()
+
+max_y = max(pull(sb_rev_by_state_month, handle))
+
+nfl_dotted = pull(filter(nfl_event_dates, type=="Dotted"), date)
+nfl_solid = pull(filter(nfl_event_dates, type=="Solid"), date)
+
+ncaa_event_dates = tibble(
+  date = c(
+    ymd(paste(years_in_data, "03", "01", sep = "-"))
+    ),
+  
+  type = case_when(
+    month(date) == 3 ~ "Solid"
+    ),
+  
+  label = case_when(
+    month(date) == 3 ~ "March Madness"
+    )
+  ) |> 
+  filter(date >= min(sb_rev_by_state_month$month), date <= max(sb_rev_by_state_month$month))
+
+ncaa_solid = pull(ncaa_event_dates, date)
+
+for (i in 1:nrow(states)) {
+  row = states[i,]
+  fig = fig |> add_trace(
+    y =as.formula(paste0("~", row["state_trace"])), 
+    name=row["state"],
+    type = 'scatter', 
+    mode = 'lines', 
+    visible = 'legendonly',
+    color = paste(substr(row["state_trace"], 1, 1), substr(row["state_trace"], nchar(row["state_trace"]), nchar(row["state_trace"])))
+    )
+}
+
+nfl_shape_list = list()
+
+for (i in 1:nrow(nfl_season)) {
+      start_d <- nfl_season$start_of_season[i]  # Access 'Name' column for the current row
+      end_d <- nfl_season$end_of_season[i]    # Access 'Age' column for the current row
+
+      print(paste("Row", i, ":", start_d, "is", end_d, "years old and lives in"))
+      
+      year_shape = list(
+          type = "rect",
+          x0 = start_d,
+          x1 = end_d,
+          y0 = 0,
+          y1 = max_y,
+          yref = "paper", # This ensures the line spans the entire y-axis height
+          fillcolor = "red", line = list(color = "red"), opacity = 0.3
+          #line = list(dash="dot", color = "red", width = 1)
+          #visible = FALSE, # Initially hidden
+        )
+      nfl_shape_list[[i]] = year_shape
+}
+
+nfl_shape_list = c(nfl_shape_list,
+                   lapply(nfl_solid, function(date_val) {
+        list(
+          type = "line",
+          x0 = date_val,
+          x1 = date_val,
+          y0 = 0,
+          y1 = max_y,
+          yref = "paper", # This ensures the line spans the entire y-axis height
+          line = list(color = "orange", width = 0.7, dash = "dot")
+        )
+      }))
+
+ncaa_shape_list = lapply(ncaa_solid, function(date_val) {
+        list(
+          type = "line",
+          x0 = date_val,
+          x1 = date_val,
+          y0 = 0,
+          y1 = max_y,
+          yref = "paper", # This ensures the line spans the entire y-axis height
+          line = list(dash="dot", color = "blue", width = 1)
+        )
+      })
+
+shapes = c(lapply(nfl_dotted, function(date_val) {
+        list(
+          type = "line",
+          x0 = date_val,
+          x1 = date_val,
+          y0 = 0,
+          y1 = max_y,
+          yref = "paper", # This ensures the line spans the entire y-axis height
+          line = list(dash="dot", color = "red", width = 1)
+          #visible = FALSE, # Initially hidden
+        )
+      }),
+    lapply(nfl_solid, function(date_val) {
+        list(
+          type = "line",
+          x0 = date_val,
+          x1 = date_val,
+          y0 = 0,
+          y1 = max_y,
+          yref = "paper", # This ensures the line spans the entire y-axis height
+          line = list(color = "orange", width = 0.5, dash = "dot")
+          #visible = FALSE, # Initially hidden
+        )
+      }))
+
+
+#add buttons to show/hide shapes
+fig = fig |>  layout(updatemenus = list(
+    list(
+      type = "buttons",
+      direction = "right",
+      xanchor = "left",
+      yanchor = "top",
+      x = 0.1, # Position the menu at 10% from the left
+      y = 1.2, # Position the menu at 110% from the bottom
+      pad = list("r" = 10, "t" = 10),
+      buttons = list(
+        list(
+          method = "relayout",
+          args = list(list(shapes = list())),
+          label = "Hide seasons"
+        ),
+        list(
+          method = "relayout",
+          label = "Show NFL season",
+          args = list(list(shapes = nfl_shape_list))
+        ),
+        list(
+          method = "relayout",
+          label = "Show NCAA season",
+          args = list(list(shapes = ncaa_shape_list))
+        )
+      )
+    )
+  ))
+
+fig
+```
+
 
 ## BRFSS
 
