@@ -1,0 +1,17 @@
+---
+title: "Project Screencast"
+output: 
+  html_document
+---
+
+Embedded below is an overview of our project as a screencast:
+
+<div style="text-align: center;">
+  <iframe 
+    width="560" height="315"
+    src="https://www.youtube.com/embed/ZVeWRGpAv6Y?si=DnGdw-WRjuwWEgEw" title="YouTube video player"
+    frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope;
+    picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin"
+    allowfullscreen>
+  </iframe>
+</div>
